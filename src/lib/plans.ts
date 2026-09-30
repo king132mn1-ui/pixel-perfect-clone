@@ -5,6 +5,7 @@ export type Plan = {
   name: string;
   price: number;
   credits: number | "unlimited";
+  unlimited?: boolean;
   tagline: string;
   features: string[];
   highlight?: boolean;
@@ -45,6 +46,7 @@ export const PLANS: Plan[] = [
     name: "Enterprise",
     price: 100,
     credits: "unlimited",
+    unlimited: true,
     tagline: "For organisations at scale",
     features: [
       "Unlimited AI credits",

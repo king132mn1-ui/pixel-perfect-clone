@@ -75,7 +75,7 @@ const STARTER_PACKS: Record<string, string[]> = {
 function BlueTeam() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIES[0] ?? "Incident response");
   const [open, setOpen] = useState(false);
 
   const { data: items = [] } = useQuery({
@@ -102,9 +102,9 @@ function BlueTeam() {
     const rows = titles
       .filter((t) => !existing.has(t))
       .map((title) => ({ user_id: user.id, category, title }));
-    if (rows.length === 0) return toast.info("This playbook is already loaded.");
+    if (rows.length === 0) { toast.info("This playbook is already loaded."); return; }
     const { error } = await supabase.from("checklist_items").insert(rows);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Loaded ${rows.length} tasks.`);
     void qc.invalidateQueries({ queryKey: ["checklist"] });
   }
@@ -117,7 +117,7 @@ function BlueTeam() {
       title: String(form.get("title") ?? "").trim(),
       detail: String(form.get("detail") ?? "").trim() || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setOpen(false);
     void qc.invalidateQueries({ queryKey: ["checklist"] });
   }

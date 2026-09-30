@@ -69,7 +69,7 @@ function Support() {
       .insert({ user_id: user.id, subject })
       .select()
       .single();
-    if (error || !thread) return toast.error(error?.message ?? "Could not open the thread.");
+    if (error || !thread) { toast.error(error?.message ?? "Could not open the thread."); return; }
     await supabase.from("support_messages").insert({ thread_id: thread.id, sender_id: user.id, body });
     toast.success("Support thread opened.");
     setActiveId(thread.id);
@@ -81,7 +81,7 @@ function Support() {
     const { error } = await supabase
       .from("support_messages")
       .insert({ thread_id: currentId, sender_id: user.id, body: reply.trim() });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setReply("");
     void qc.invalidateQueries({ queryKey: ["support-messages", currentId] });
   }
