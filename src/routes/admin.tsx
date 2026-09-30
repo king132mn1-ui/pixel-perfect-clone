@@ -128,7 +128,7 @@ function Admin() {
       .from("subscriptions")
       .update({
         plan: planId,
-        credits_remaining: plan?.unlimited ? 0 : (plan?.credits ?? 0),
+        credits_remaining: plan?.unlimited ? 0 : Number(plan?.credits ?? 0),
         unlimited: !!plan?.unlimited,
       })
       .eq("user_id", userId);

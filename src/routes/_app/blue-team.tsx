@@ -75,7 +75,7 @@ const STARTER_PACKS: Record<string, string[]> = {
 function BlueTeam() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIES[0] ?? "Incident response");
   const [open, setOpen] = useState(false);
 
   const { data: items = [] } = useQuery({
