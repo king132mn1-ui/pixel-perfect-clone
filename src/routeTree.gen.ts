@@ -10,33 +10,156 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
+import { Route as AppBillingRouteImport } from './routes/_app/billing'
+import { Route as AppBlueTeamRouteImport } from './routes/_app/blue-team'
+import { Route as AppKnowledgeRouteImport } from './routes/_app/knowledge'
+import { Route as AppRedTeamRouteImport } from './routes/_app/red-team'
+import { Route as AppSupportRouteImport } from './routes/_app/support'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBlueTeamRoute = AppBlueTeamRouteImport.update({
+  id: '/blue-team',
+  path: '/blue-team',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRedTeamRoute = AppRedTeamRouteImport.update({
+  id: '/red-team',
+  path: '/red-team',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSupportRoute = AppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/assistant': typeof AppAssistantRoute
+  '/billing': typeof AppBillingRoute
+  '/blue-team': typeof AppBlueTeamRoute
+  '/knowledge': typeof AppKnowledgeRoute
+  '/red-team': typeof AppRedTeamRoute
+  '/support': typeof AppSupportRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/assistant': typeof AppAssistantRoute
+  '/billing': typeof AppBillingRoute
+  '/blue-team': typeof AppBlueTeamRoute
+  '/knowledge': typeof AppKnowledgeRoute
+  '/red-team': typeof AppRedTeamRoute
+  '/support': typeof AppSupportRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/_app/assistant': typeof AppAssistantRoute
+  '/_app/billing': typeof AppBillingRoute
+  '/_app/blue-team': typeof AppBlueTeamRoute
+  '/_app/knowledge': typeof AppKnowledgeRoute
+  '/_app/red-team': typeof AppRedTeamRoute
+  '/_app/support': typeof AppSupportRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/assistant'
+    | '/billing'
+    | '/blue-team'
+    | '/knowledge'
+    | '/red-team'
+    | '/support'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/assistant'
+    | '/billing'
+    | '/blue-team'
+    | '/knowledge'
+    | '/red-team'
+    | '/support'
+    | '/api/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/admin'
+    | '/auth'
+    | '/_app/assistant'
+    | '/_app/billing'
+    | '/_app/blue-team'
+    | '/_app/knowledge'
+    | '/_app/red-team'
+    | '/_app/support'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +171,105 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/billing': {
+      id: '/_app/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/blue-team': {
+      id: '/_app/blue-team'
+      path: '/blue-team'
+      fullPath: '/blue-team'
+      preLoaderRoute: typeof AppBlueTeamRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/knowledge': {
+      id: '/_app/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof AppKnowledgeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/red-team': {
+      id: '/_app/red-team'
+      path: '/red-team'
+      fullPath: '/red-team'
+      preLoaderRoute: typeof AppRedTeamRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/support': {
+      id: '/_app/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AppSupportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAssistantRoute: typeof AppAssistantRoute
+  AppBillingRoute: typeof AppBillingRoute
+  AppBlueTeamRoute: typeof AppBlueTeamRoute
+  AppKnowledgeRoute: typeof AppKnowledgeRoute
+  AppRedTeamRoute: typeof AppRedTeamRoute
+  AppSupportRoute: typeof AppSupportRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAssistantRoute: AppAssistantRoute,
+  AppBillingRoute: AppBillingRoute,
+  AppBlueTeamRoute: AppBlueTeamRoute,
+  AppKnowledgeRoute: AppKnowledgeRoute,
+  AppRedTeamRoute: AppRedTeamRoute,
+  AppSupportRoute: AppSupportRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
