@@ -5,7 +5,9 @@ import QRCode from "qrcode";
 import { Check, Copy, AlertTriangle, Infinity as InfinityIcon, Zap } from "lucide-react";
 import { toast } from "sonner";
 
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { verifyPayment } from "@/lib/payments.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { PLANS, PLAN_BY_ID, USDT_ADDRESS, USDT_NETWORK, planLabel, type PlanId } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,8 @@ export const Route = createFileRoute("/_app/billing")({
 });
 
 function Billing() {
-  const { user, subscription, isAdmin } = useAuth();
+  const { user, subscription, isAdmin, refresh } = useAuth();
+  const verify = useServerFn(verifyPayment);
   const qc = useQueryClient();
   const [checkout, setCheckout] = useState<PlanId | null>(null);
   const [qr, setQr] = useState<string>("");
@@ -53,22 +56,21 @@ function Billing() {
 
   async function submitTxid() {
     if (!user || !checkout) return;
-    if (txid.trim().length < 16) { toast.error("Enter the full transaction hash (TXID) from your wallet."); return; }
+    if (!/^(0x)?[0-9a-fA-F]{64}$/.test(txid.trim())) { toast.error("Enter the full 64-character transaction hash (TXID)."); return; }
     setBusy(true);
-    const plan = PLAN_BY_ID[checkout];
-    const { error } = await supabase.from("payments").insert({
-      user_id: user.id,
-      plan: checkout,
-      amount_usd: plan?.price ?? 0,
-      txid: txid.trim(),
-      network: "TRC20",
-    });
-    setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    setCheckout(null);
-    setTxid("");
-    toast.success("Transaction submitted. An admin will verify it and activate your plan.");
-    void qc.invalidateQueries({ queryKey: ["payments"] });
+    try {
+      const res = await verify({ data: { plan: checkout as "starter" | "professional" | "enterprise", txid: txid.trim() } });
+      if (!res.ok) { toast.error(res.error); return; }
+      setCheckout(null);
+      setTxid("");
+      toast.success(`Payment verified on-chain (${res.amount} USDT). ${res.plan} plan is now active!`);
+      await refresh();
+      void qc.invalidateQueries({ queryKey: ["payments"] });
+    } catch {
+      toast.error("Verification failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   const plan = checkout ? PLAN_BY_ID[checkout] : null;
