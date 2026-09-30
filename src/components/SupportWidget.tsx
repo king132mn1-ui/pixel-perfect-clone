@@ -20,7 +20,7 @@ export function SupportWidget() {
 
   async function send() {
     if (!user) return;
-    if (!subject.trim() || !body.trim()) return toast.error("Add a subject and a message.");
+    if (!subject.trim() || !body.trim()) { toast.error("Add a subject and a message."); return; }
     setBusy(true);
     const { data: thread, error } = await supabase
       .from("support_threads")
@@ -29,13 +29,13 @@ export function SupportWidget() {
       .single();
     if (error || !thread) {
       setBusy(false);
-      return toast.error(error?.message ?? "Could not send your message.");
+      { toast.error(error?.message ?? "Could not send your message."); return; }
     }
     const { error: msgError } = await supabase
       .from("support_messages")
       .insert({ thread_id: thread.id, sender_id: user.id, body: body.trim(), from_admin: false });
     setBusy(false);
-    if (msgError) return toast.error(msgError.message);
+    if (msgError) { toast.error(msgError.message); return; }
     setSubject("");
     setBody("");
     setOpen(false);

@@ -132,14 +132,14 @@ function Admin() {
         unlimited: !!plan?.unlimited,
       })
       .eq("user_id", userId);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Subscription updated.");
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
 
   async function setCredits(userId: string, credits: number) {
     const { error } = await supabase.from("subscriptions").update({ credits_remaining: credits }).eq("user_id", userId);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Credits updated.");
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
@@ -149,7 +149,7 @@ function Admin() {
       .from("payments")
       .update({ status: approve ? "approved" : "rejected", reviewed_at: new Date().toISOString() })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     if (approve) await setPlan(userId, planId);
     toast.success(approve ? "Payment approved and plan activated." : "Payment rejected.");
     void qc.invalidateQueries({ queryKey: ["admin-payments"] });
@@ -160,7 +160,7 @@ function Admin() {
       .from("app_settings")
       .update({ maintenance_mode: enabled, maintenance_message: maintMessage })
       .eq("id", true);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(enabled ? "Maintenance mode is ON." : "Maintenance mode is OFF.");
     void qc.invalidateQueries({ queryKey: ["admin-settings"] });
   }
@@ -170,7 +170,7 @@ function Admin() {
     const { error } = await supabase
       .from("support_messages")
       .insert({ thread_id: activeThread, sender_id: user.id, body: reply.trim(), from_admin: true });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setReply("");
     void qc.invalidateQueries({ queryKey: ["admin-thread-messages", activeThread] });
   }

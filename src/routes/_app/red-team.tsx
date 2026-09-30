@@ -80,7 +80,7 @@ function RedTeam() {
       client: String(form.get("client") ?? "").trim() || null,
       scope: String(form.get("scope") ?? "").trim() || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setEngOpen(false);
     toast.success("Engagement created.");
     void qc.invalidateQueries({ queryKey: ["engagements"] });
@@ -96,7 +96,7 @@ function RedTeam() {
       description: String(form.get("description") ?? "").trim() || null,
       remediation: String(form.get("remediation") ?? "").trim() || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setFindOpen(false);
     toast.success("Finding logged.");
     void qc.invalidateQueries({ queryKey: ["findings", activeId] });
@@ -116,7 +116,7 @@ function RedTeam() {
     if (!active) return;
     const html = buildReportHtml(active, findings);
     const win = window.open("", "_blank");
-    if (!win) return toast.error("Allow pop-ups to export the report.");
+    if (!win) { toast.error("Allow pop-ups to export the report."); return; }
     win.document.write(html);
     win.document.close();
   }

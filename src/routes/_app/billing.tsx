@@ -53,7 +53,7 @@ function Billing() {
 
   async function submitTxid() {
     if (!user || !checkout) return;
-    if (txid.trim().length < 16) return toast.error("Enter the full transaction hash (TXID) from your wallet.");
+    if (txid.trim().length < 16) { toast.error("Enter the full transaction hash (TXID) from your wallet."); return; }
     setBusy(true);
     const plan = PLAN_BY_ID[checkout];
     const { error } = await supabase.from("payments").insert({
@@ -64,7 +64,7 @@ function Billing() {
       network: "TRC20",
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setCheckout(null);
     setTxid("");
     toast.success("Transaction submitted. An admin will verify it and activate your plan.");

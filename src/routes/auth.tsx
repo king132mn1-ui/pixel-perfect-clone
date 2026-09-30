@@ -39,7 +39,7 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Welcome back.");
     void navigate({ to: "/assistant" });
   }
@@ -56,7 +56,7 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Account created. Check your inbox to confirm your email, then sign in.");
   }
 

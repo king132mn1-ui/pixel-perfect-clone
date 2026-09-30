@@ -65,7 +65,7 @@ function Assistant() {
     if (!user || streaming) return;
     const trimmed = text.trim();
     if (!trimmed) return;
-    if (outOfCredits) return toast.error("You are out of AI credits. Upgrade your plan to continue.");
+    if (outOfCredits) { toast.error("You are out of AI credits. Upgrade your plan to continue."); return; }
 
     const userMsg: Msg = { id: crypto.randomUUID(), role: "user", content: trimmed };
     const history = [...messages, userMsg];
