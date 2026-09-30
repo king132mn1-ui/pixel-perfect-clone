@@ -59,7 +59,7 @@ function Billing() {
     const { error } = await supabase.from("payments").insert({
       user_id: user.id,
       plan: checkout,
-      amount_usd: plan.price,
+      amount_usd: plan?.price ?? 0,
       txid: txid.trim(),
       network: "TRC20",
     });
