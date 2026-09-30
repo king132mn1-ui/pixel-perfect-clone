@@ -5,6 +5,7 @@ export type Plan = {
   name: string;
   price: number;
   credits: number | "unlimited";
+  unlimited?: boolean;
   tagline: string;
   features: string[];
   highlight?: boolean;

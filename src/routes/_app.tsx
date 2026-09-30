@@ -140,9 +140,12 @@ function AppLayout() {
             <span className="text-muted-foreground">
               You are on the free trial with {subscription.credits_remaining} credits remaining.
             </span>
-            <Badge asChild variant="outline" className="border-primary/40 text-primary">
-              <Link to="/billing">Upgrade</Link>
-            </Badge>
+            <Link
+              to="/billing"
+              className="rounded-md border border-primary/40 px-2.5 py-1 font-mono text-[11px] text-primary transition-colors hover:bg-primary/10"
+            >
+              Upgrade
+            </Link>
           </div>
         </div>
       ) : null}

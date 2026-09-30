@@ -7,7 +7,7 @@ const STYLES: Record<string, string> = {
 };
 
 export function SeverityBadge({ severity }: { severity: string }) {
-  const style = STYLES[severity] ?? STYLES.info;
+  const style = STYLES[severity] ?? STYLES["info"];
   return (
     <span
       className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-[10px] tracking-wider uppercase ${style}`}
