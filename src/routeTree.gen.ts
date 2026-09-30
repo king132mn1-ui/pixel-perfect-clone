@@ -13,8 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
+import { Route as AppBlueTeamRouteImport } from './routes/_app/blue-team'
 import { Route as AppKnowledgeRouteImport } from './routes/_app/knowledge'
 import { Route as AppRedTeamRouteImport } from './routes/_app/red-team'
+import { Route as AppSupportRouteImport } from './routes/_app/support'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const IndexRoute = IndexRouteImport.update({
@@ -36,6 +38,11 @@ const AppAssistantRoute = AppAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBlueTeamRoute = AppBlueTeamRouteImport.update({
+  id: '/blue-team',
+  path: '/blue-team',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -44,6 +51,11 @@ const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
 const AppRedTeamRoute = AppRedTeamRouteImport.update({
   id: '/red-team',
   path: '/red-team',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSupportRoute = AppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -56,16 +68,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/assistant': typeof AppAssistantRoute
+  '/blue-team': typeof AppBlueTeamRoute
   '/knowledge': typeof AppKnowledgeRoute
   '/red-team': typeof AppRedTeamRoute
+  '/support': typeof AppSupportRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/assistant': typeof AppAssistantRoute
+  '/blue-team': typeof AppBlueTeamRoute
   '/knowledge': typeof AppKnowledgeRoute
   '/red-team': typeof AppRedTeamRoute
+  '/support': typeof AppSupportRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -74,24 +90,43 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/assistant': typeof AppAssistantRoute
+  '/_app/blue-team': typeof AppBlueTeamRoute
   '/_app/knowledge': typeof AppKnowledgeRoute
   '/_app/red-team': typeof AppRedTeamRoute
+  '/_app/support': typeof AppSupportRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/assistant' | '/knowledge' | '/red-team' | '/api/chat'
+    | '/'
+    | '/auth'
+    | '/assistant'
+    | '/blue-team'
+    | '/knowledge'
+    | '/red-team'
+    | '/support'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/assistant' | '/knowledge' | '/red-team' | '/api/chat'
+  to:
+    | '/'
+    | '/auth'
+    | '/assistant'
+    | '/blue-team'
+    | '/knowledge'
+    | '/red-team'
+    | '/support'
+    | '/api/chat'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/auth'
     | '/_app/assistant'
+    | '/_app/blue-team'
     | '/_app/knowledge'
     | '/_app/red-team'
+    | '/_app/support'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssistantRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/blue-team': {
+      id: '/_app/blue-team'
+      path: '/blue-team'
+      fullPath: '/blue-team'
+      preLoaderRoute: typeof AppBlueTeamRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/knowledge': {
       id: '/_app/knowledge'
       path: '/knowledge'
@@ -146,6 +188,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRedTeamRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/support': {
+      id: '/_app/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AppSupportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -158,14 +207,18 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
+  AppBlueTeamRoute: typeof AppBlueTeamRoute
   AppKnowledgeRoute: typeof AppKnowledgeRoute
   AppRedTeamRoute: typeof AppRedTeamRoute
+  AppSupportRoute: typeof AppSupportRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
+  AppBlueTeamRoute: AppBlueTeamRoute,
   AppKnowledgeRoute: AppKnowledgeRoute,
   AppRedTeamRoute: AppRedTeamRoute,
+  AppSupportRoute: AppSupportRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
