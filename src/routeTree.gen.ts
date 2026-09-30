@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
+import { Route as AppBillingRouteImport } from './routes/_app/billing'
 import { Route as AppBlueTeamRouteImport } from './routes/_app/blue-team'
 import { Route as AppKnowledgeRouteImport } from './routes/_app/knowledge'
 import { Route as AppRedTeamRouteImport } from './routes/_app/red-team'
@@ -28,6 +30,11 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -36,6 +43,11 @@ const AuthRoute = AuthRouteImport.update({
 const AppAssistantRoute = AppAssistantRouteImport.update({
   id: '/assistant',
   path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBlueTeamRoute = AppBlueTeamRouteImport.update({
@@ -66,8 +78,10 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/assistant': typeof AppAssistantRoute
+  '/billing': typeof AppBillingRoute
   '/blue-team': typeof AppBlueTeamRoute
   '/knowledge': typeof AppKnowledgeRoute
   '/red-team': typeof AppRedTeamRoute
@@ -76,8 +90,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/assistant': typeof AppAssistantRoute
+  '/billing': typeof AppBillingRoute
   '/blue-team': typeof AppBlueTeamRoute
   '/knowledge': typeof AppKnowledgeRoute
   '/red-team': typeof AppRedTeamRoute
@@ -88,8 +104,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/_app/assistant': typeof AppAssistantRoute
+  '/_app/billing': typeof AppBillingRoute
   '/_app/blue-team': typeof AppBlueTeamRoute
   '/_app/knowledge': typeof AppKnowledgeRoute
   '/_app/red-team': typeof AppRedTeamRoute
@@ -100,8 +118,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/assistant'
+    | '/billing'
     | '/blue-team'
     | '/knowledge'
     | '/red-team'
@@ -110,8 +130,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/assistant'
+    | '/billing'
     | '/blue-team'
     | '/knowledge'
     | '/red-team'
@@ -121,8 +143,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/admin'
     | '/auth'
     | '/_app/assistant'
+    | '/_app/billing'
     | '/_app/blue-team'
     | '/_app/knowledge'
     | '/_app/red-team'
@@ -133,6 +157,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -153,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -165,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/assistant'
       fullPath: '/assistant'
       preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/billing': {
+      id: '/_app/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/blue-team': {
@@ -207,6 +246,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
+  AppBillingRoute: typeof AppBillingRoute
   AppBlueTeamRoute: typeof AppBlueTeamRoute
   AppKnowledgeRoute: typeof AppKnowledgeRoute
   AppRedTeamRoute: typeof AppRedTeamRoute
@@ -215,6 +255,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
+  AppBillingRoute: AppBillingRoute,
   AppBlueTeamRoute: AppBlueTeamRoute,
   AppKnowledgeRoute: AppKnowledgeRoute,
   AppRedTeamRoute: AppRedTeamRoute,
@@ -226,6 +267,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
 }
