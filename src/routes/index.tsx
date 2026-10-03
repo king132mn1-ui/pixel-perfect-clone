@@ -12,7 +12,6 @@ import {
   LifeBuoy,
 } from "lucide-react";
 
-import heroImage from "@/assets/hero-sentinel.jpg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -112,14 +111,6 @@ function Landing() {
       </header>
 
       <section className="relative overflow-hidden">
-        <img
-          src={heroImage}
-          alt="Security operations centre with global threat telemetry"
-          width={1536}
-          height={1024}
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
         <div className="relative mx-auto max-w-4xl px-6 py-28 text-center">
           <Badge variant="outline" className="border-primary/40 text-primary">
             <span className="live-dot mr-2 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
