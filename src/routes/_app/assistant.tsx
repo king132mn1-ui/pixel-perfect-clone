@@ -112,13 +112,18 @@ function Assistant() {
             const payload = line.slice(5).trim();
             if (!payload || payload === "[DONE]") continue;
             try {
-              const event = JSON.parse(payload) as { type?: string; delta?: string };
-              if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
-                answer += event.delta;
+              const event = JSON.parse(payload) as {
+                choices?: { delta?: { content?: string | null } }[];
+                error?: { message?: string };
+              };
+              if (event.error?.message) throw new Error(event.error.message);
+              const delta = event.choices?.[0]?.delta?.content;
+              if (typeof delta === "string" && delta) {
+                answer += delta;
                 setMessages([...history, { id: "streaming", role: "assistant", content: answer }]);
               }
-            } catch {
-              /* partial frame */
+            } catch (e) {
+              if (e instanceof Error && !(e instanceof SyntaxError)) throw e;
             }
           }
         }
