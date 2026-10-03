@@ -47,7 +47,7 @@ function AuthPage() {
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -55,9 +55,14 @@ function AuthPage() {
         data: { display_name: displayName || email.split("@")[0] },
       },
     });
+    if (error) { setBusy(false); toast.error(error.message); return; }
+    if (!data.session) {
+      const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
+      if (siErr) { setBusy(false); toast.error(siErr.message); return; }
+    }
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Account created. Check your inbox to confirm your email, then sign in.");
+    toast.success("Welcome to SentinelSec AI.");
+    void navigate({ to: "/assistant" });
   }
 
   return (
