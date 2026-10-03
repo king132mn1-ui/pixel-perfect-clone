@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Apply the shared application backdrop globally from `src/styles.css`; this keeps every route visually consistent and avoids route-specific image duplication.

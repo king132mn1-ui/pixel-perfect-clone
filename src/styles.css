@@ -223,8 +223,12 @@
     color: var(--color-foreground);
     background-image:
       linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: 44px 44px;
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(oklch(0 0 0 / 72%), oklch(0 0 0 / 72%)),
+      url("./assets/hero-sentinel.jpg");
+    background-position: top left, top left, center, center;
+    background-size: 44px 44px, 44px 44px, cover, cover;
+    background-repeat: repeat, repeat, no-repeat, no-repeat;
     background-attachment: fixed;
   }
 
