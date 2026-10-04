@@ -1,25 +1,69 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-import {
-  createLovableAiGatewayRunIdFetch,
-  getLovableAiGatewayRunId,
-  getLovableAiGatewayResponseHeaders,
-} from "@/lib/run-id";
+type AgentType = "assistant" | "red_team" | "blue_team";
 
-const SYSTEM_PROMPT = `You are SentinelSec AI, the security analyst assistant inside the SentinelSec AI platform.
+const SYSTEM_PROMPTS: Record<AgentType, string> = {
+  assistant: `You are SentinelSec AI, the security analyst assistant inside the SentinelSec AI platform.
 
-Your scope is defensive and authorised security work:
-- Explaining vulnerability classes (OWASP Top 10, CWE, published CVEs) and how they are exploited conceptually
-- Reviewing configuration, code and architecture for weaknesses, and writing hardened replacements
-- Incident response guidance, detection logic, logging and monitoring advice
-- Helping structure authorised penetration-test engagements: scoping, methodology, evidence handling, severity rating (CVSS) and remediation write-ups
+Scope: defensive and authorised security work — vulnerability classes (OWASP/CWE/CVE), config/code/architecture review, incident response, authorised pentest structure, severity/CVSS, remediation.
 
 Rules:
 - Assume the user is a security professional working under written authorisation.
-- Do not produce working exploits, malware, credential-stuffing tooling, or step-by-step instructions aimed at systems the user does not own. Offer the defensive or methodological equivalent instead, and say briefly why.
-- Be concrete and technical. Use short sections, tables where they help, and fenced code blocks for configuration or code.
-- When rating an issue, give severity (critical/high/medium/low), impact, and concrete remediation steps.`;
+- Do not produce working exploits, malware, or credential-stuffing tooling. Offer the defensive or methodological equivalent instead.
+- Be concrete and technical. Use short sections, tables when helpful, fenced code blocks for config or code.
+- When the user asks you to actually perform an action — scan a URL, fetch headers, run a workflow, dispatch an automation — call the execute_external_task tool with a precise action name, the target, and any useful parameters, then summarise the returned JSON for the user as step-by-step completion notes.`,
+
+  red_team: `You are the Red Team Agent inside SentinelSec AI, an autonomous assistant for AUTHORISED offensive-security assessments.
+
+Scope: scoping, reconnaissance planning, vulnerability analysis, attack-surface mapping, proof-of-concept narration, CVSS scoring, remediation write-ups.
+
+Rules:
+- Only operate against targets the user is authorised to test. If authorisation is unclear, ask once, then proceed defensively.
+- Never produce working malware, ransomware, or credential-stuffing tooling.
+- For any action the user asks you to run (recon, port/host scan, header check, directory enumeration, vulnerability probe, PoC dispatch), call the execute_external_task tool with an exact action name and the target.
+- After the tool returns, present a vulnerability report: attack surface metrics, findings with severity (critical/high/medium/low), PoC/output in fenced code blocks, and remediation guidance.`,
+
+  blue_team: `You are the Blue Team Agent inside SentinelSec AI, an autonomous defender assistant.
+
+Scope: incident response, hardening, detection engineering, monitoring, log analysis, security headers, firewall and WAF/YARA rules.
+
+Rules:
+- For any action the user asks you to run (fetch headers, pull a configuration, deploy a hardening change, update a rule, trigger a containment workflow), call the execute_external_task tool with an exact action name and the target.
+- After the tool returns, respond with: patch recommendations, a headers or config diff in fenced code blocks, firewall/YARA/Sigma rules where relevant, and clear remediation steps the on-call defender can follow.
+- Keep answers operational and concise.`,
+};
+
+const TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "execute_external_task",
+      description:
+        "Dispatch a real-world action to the configured external automation webhook. Use this when the user asks for a scan, probe, fetch, deployment, rule update, or any operation that is not purely analytical.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            description:
+              "Short machine-readable operation name, e.g. 'scan_url', 'fetch_headers', 'nmap_tcp', 'deploy_waf_rule', 'trigger_workflow'.",
+          },
+          target: {
+            type: "string",
+            description: "Primary target of the action: URL, hostname, IP, workflow id, or payload identifier.",
+          },
+          parameters: {
+            type: "object",
+            description: "Optional additional arguments as a flat JSON object.",
+            additionalProperties: true,
+          },
+        },
+        required: ["action", "target"],
+      },
+    },
+  },
+];
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {
@@ -61,8 +105,6 @@ export const Route = createFileRoute("/api/chat")({
         const userId = claimsData?.claims?.sub;
         if (claimsError || !userId) return json({ error: "Your session has expired." }, 401);
 
-        // Prefer the privileged client; fall back to a user-scoped client (RLS) when the
-        // service role key is not available (e.g. external hosting).
         let db: ReturnType<typeof createClient>;
         if (process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -96,18 +138,27 @@ export const Route = createFileRoute("/api/chat")({
           );
         }
 
-        let body: { messages?: { role: string; content: string }[] };
+        let body: {
+          agent_type?: AgentType;
+          messages?: unknown[];
+          // Signals whether this is a follow-up turn that already produced tool results
+          // (we only charge credits on the first turn to avoid double-billing).
+          follow_up?: boolean;
+        };
         try {
           body = (await request.json()) as typeof body;
         } catch {
           return json({ error: "Invalid request." }, 400);
         }
-        const messages = (body.messages ?? []).filter(
-          (m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
-        );
+
+        const agentType: AgentType = ["assistant", "red_team", "blue_team"].includes(body.agent_type as string)
+          ? (body.agent_type as AgentType)
+          : "assistant";
+
+        const messages = Array.isArray(body.messages) ? body.messages : [];
         if (messages.length === 0) return json({ error: "No message to send." }, 400);
 
-        if (!unlimited && sub) {
+        if (!unlimited && sub && !body.follow_up) {
           const { error: updErr } = await db
             .from("subscriptions")
             .update({
@@ -119,7 +170,7 @@ export const Route = createFileRoute("/api/chat")({
           if (updErr) console.error("Credit deduction failed", updErr.message);
           await db
             .from("credit_ledger")
-            .insert({ user_id: userId, delta: -1, reason: "AI assistant message" } as never);
+            .insert({ user_id: userId, delta: -1, reason: `AI ${agentType} message` } as never);
         }
 
         try {
@@ -134,15 +185,17 @@ export const Route = createFileRoute("/api/chat")({
             },
             body: JSON.stringify({
               model: MODEL,
-              stream: true,
+              stream: false,
+              tools: TOOLS,
+              tool_choice: "auto",
               messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                ...messages.slice(-24).map((m) => ({ role: m.role, content: m.content })),
+                { role: "system", content: SYSTEM_PROMPTS[agentType] },
+                ...messages.slice(-24),
               ],
             }),
           });
 
-          if (!upstream.ok || !upstream.body) {
+          if (!upstream.ok) {
             const detail = await upstream.text();
             console.error("OpenRouter error", upstream.status, detail);
             const message =
@@ -156,10 +209,22 @@ export const Route = createFileRoute("/api/chat")({
             return json({ error: message }, upstream.status);
           }
 
-          return new Response(upstream.body, {
-            status: 200,
-            headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform" },
-          });
+          const data = (await upstream.json()) as {
+            choices?: {
+              message?: {
+                role: string;
+                content: string | null;
+                tool_calls?: {
+                  id: string;
+                  type: "function";
+                  function: { name: string; arguments: string };
+                }[];
+              };
+            }[];
+          };
+          const msg = data.choices?.[0]?.message;
+          if (!msg) return json({ error: "The assistant returned an empty response." }, 502);
+          return json({ message: msg }, 200);
         } catch (error) {
           if (request.signal.aborted && error instanceof Error && error.name === "AbortError") {
             return new Response(null, { status: 499 });
