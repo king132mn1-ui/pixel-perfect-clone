@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Apply the shared application backdrop globally from `src/styles.css`; this keeps every route visually consistent and avoids route-specific image duplication.
+
+- AI agent turns run through `src/lib/agent.ts` (tool-call loop) and dispatch real-world actions via `src/lib/agent-webhook.ts` to `VITE_WEBHOOK_URL`; keep provider calls and credit gating in `src/routes/api/chat.ts` so no AI key reaches the browser.
