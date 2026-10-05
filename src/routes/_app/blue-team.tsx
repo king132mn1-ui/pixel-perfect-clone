@@ -14,6 +14,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AgentChat } from "@/components/agent/AgentChat";
+
+const BLUE_SUGGESTIONS = [
+  "Check the security headers on https://example.com and give me the diff",
+  "Deploy a WAF rule blocking path traversal on the edge node",
+  "Build a containment checklist for a suspected ransomware host",
+  "Write a Sigma rule for impossible-travel sign-ins",
+];
 
 export const Route = createFileRoute("/_app/blue-team")({
   head: () => ({
