@@ -17,6 +17,7 @@ type AuthValue = {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  banned: boolean;
   subscription: Subscription | null;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthValue>({
   session: null,
   loading: true,
   isAdmin: false,
+  banned: false,
   subscription: null,
   refresh: async () => {},
   signOut: async () => {},
@@ -36,18 +38,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [banned, setBanned] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   const loadProfileData = useCallback(async (userId: string | undefined) => {
     if (!userId) {
       setIsAdmin(false);
+      setBanned(false);
       setSubscription(null);
       return;
     }
-    const [{ data: roles }, { data: sub }] = await Promise.all([
+    const [{ data: roles }, { data: sub }, { data: ban }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
       supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("banned_users").select("user_id").eq("user_id", userId).maybeSingle(),
     ]);
+    setBanned(!!ban);
     setIsAdmin(!!roles?.some((r) => r.role === "admin"));
     setSubscription((sub as Subscription | null) ?? null);
   }, []);
@@ -87,11 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading,
       isAdmin,
+      banned,
       subscription,
       refresh,
       signOut,
     }),
-    [session, loading, isAdmin, subscription, refresh, signOut],
+    [session, loading, isAdmin, banned, subscription, refresh, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
