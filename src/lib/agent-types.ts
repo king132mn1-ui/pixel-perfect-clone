@@ -23,7 +23,7 @@ export type AgentMessage = {
   role: "user" | "assistant";
   content: string;
   /** Tool runs that happened while producing this assistant turn. */
-  executions?: ExecutionResult[];
+  executions?: ExecutionResult[] | undefined;
 };
 
 /** Wire-format message exchanged with /api/chat (OpenAI/OpenRouter shape). */
