@@ -12,11 +12,21 @@ import {
   LogOut,
   Infinity as InfinityIcon,
   Zap,
+  ShieldAlert,
+  User as UserIcon,
 } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SupportWidget } from "@/components/SupportWidget";
 import { planLabel } from "@/lib/plans";
@@ -35,7 +45,7 @@ const NAV = [
 ] as const;
 
 function AppLayout() {
-  const { user, loading, isAdmin, subscription, signOut } = useAuth();
+  const { user, loading, isAdmin, banned, subscription, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -51,7 +61,25 @@ function AppLayout() {
     );
   }
 
+  if (banned && !isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="panel max-w-md p-8 text-center">
+          <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
+          <h1 className="mt-4 font-display text-xl font-semibold">Account Suspended</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Access to SentinelSec AI is restricted for {user.email}. Contact the platform administrator if you believe this is a mistake.
+          </p>
+          <Button className="mt-6" variant="outline" onClick={() => void signOut()}>
+            <LogOut className="h-4 w-4" /> Sign out
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const unlimited = isAdmin || subscription?.unlimited;
+  const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email?.split("@")[0] ?? "Account";
 
   return (
     <div className="min-h-screen">
@@ -105,9 +133,34 @@ function AppLayout() {
               </Button>
             ) : null}
             <ThemeSwitcher />
-            <Button variant="ghost" size="icon" aria-label="Sign out" onClick={() => void signOut()}>
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2" aria-label="Account">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary font-mono text-[11px] text-primary-foreground uppercase">
+                    {displayName.charAt(0)}
+                  </span>
+                  <span className="hidden max-w-[160px] truncate text-xs md:inline">{user.email}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>
+                  <p className="text-sm font-medium">{displayName}</p>
+                  <p className="truncate text-xs font-normal text-muted-foreground">{user.email}</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="space-y-1 px-2 py-1.5 font-mono text-[11px] text-muted-foreground">
+                  <p>Plan: <span className="text-foreground">{isAdmin ? "Super Admin" : planLabel(subscription?.plan ?? "free")}</span></p>
+                  <p>Credits: <span className="text-foreground">{unlimited ? "Unlimited" : (subscription?.credits_remaining ?? 0)}</span></p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/billing"><UserIcon className="h-4 w-4" /> Billing & plan</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void signOut()}>
+                  <LogOut className="h-4 w-4" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 

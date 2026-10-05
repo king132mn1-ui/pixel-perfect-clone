@@ -20,6 +20,7 @@ type AuthValue = {
   banned: boolean;
   subscription: Subscription | null;
   refresh: () => Promise<void>;
+  spendCredit: () => void;
   signOut: () => Promise<void>;
 };
 
@@ -31,6 +32,7 @@ const AuthContext = createContext<AuthValue>({
   banned: false,
   subscription: null,
   refresh: async () => {},
+  spendCredit: () => {},
   signOut: async () => {},
 });
 
@@ -80,6 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await loadProfileData(session?.user?.id);
   }, [loadProfileData, session?.user?.id]);
 
+  const spendCredit = useCallback(() => {
+    setSubscription((s) =>
+      s && !s.unlimited
+        ? { ...s, credits_remaining: Math.max(0, s.credits_remaining - 1), credits_used: s.credits_used + 1 }
+        : s,
+    );
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -96,9 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       banned,
       subscription,
       refresh,
+      spendCredit,
       signOut,
     }),
-    [session, loading, isAdmin, banned, subscription, refresh, signOut],
+    [session, loading, isAdmin, banned, subscription, refresh, spendCredit, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

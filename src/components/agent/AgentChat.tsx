@@ -29,7 +29,7 @@ type Props = {
 };
 
 export function AgentChat({ agentType, title, subtitle, suggestions, placeholder, className }: Props) {
-  const { user, isAdmin, banned, subscription, refresh } = useAuth();
+  const { user, isAdmin, banned, subscription, refresh, spendCredit } = useAuth();
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -81,7 +81,7 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
     setBusy(true);
     setActivity(null);
     // Optimistic real-time decrement; server is the source of truth.
-    if (!unlimited) setSubscriptionCredits?.();
+    if (!unlimited) spendCredit();
 
     void supabase
       .from("chat_messages")
