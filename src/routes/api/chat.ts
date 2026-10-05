@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 
 type AgentType = "assistant" | "red_team" | "blue_team";
 
+const LANGUAGE_RULE = `LANGUAGE (highest priority): Detect the language of the user's latest message and reply entirely in that exact same language — Arabic if they write Arabic, English if English, and so on for any language. You are fully authorised to speak Arabic and every other language; never say you cannot or are not allowed to use a language. Keep technical terms (CVE IDs, code, commands) as-is.`;
+
 const SYSTEM_PROMPTS: Record<AgentType, string> = {
   assistant: `You are SentinelSec AI, the security analyst assistant inside the SentinelSec AI platform.
 
@@ -116,6 +118,11 @@ export const Route = createFileRoute("/api/chat")({
           });
         }
 
+        const { data: banRow } = await db.from("banned_users").select("user_id").eq("user_id", userId).maybeSingle();
+        if (banRow) {
+          return json({ error: "Account suspended — access to the AI agents is restricted.", code: "banned" }, 403);
+        }
+
         const [{ data: roleRow }, { data: subData }] = await Promise.all([
           db.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
           db
@@ -189,7 +196,7 @@ export const Route = createFileRoute("/api/chat")({
               tools: TOOLS,
               tool_choice: "auto",
               messages: [
-                { role: "system", content: SYSTEM_PROMPTS[agentType] },
+                { role: "system", content: `${LANGUAGE_RULE}\n\n${SYSTEM_PROMPTS[agentType]}` },
                 ...messages.slice(-24),
               ],
             }),
