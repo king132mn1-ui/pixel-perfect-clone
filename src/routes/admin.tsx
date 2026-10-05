@@ -42,15 +42,17 @@ function Admin() {
     queryKey: ["admin-users"],
     enabled: isAdmin,
     queryFn: async () => {
-      const [{ data: profiles }, { data: subs }, { data: roles }] = await Promise.all([
+      const [{ data: profiles }, { data: subs }, { data: roles }, { data: bans }] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("subscriptions").select("*"),
         supabase.from("user_roles").select("*"),
+        supabase.from("banned_users").select("user_id"),
       ]);
       return (profiles ?? []).map((p) => ({
         ...p,
         subscription: (subs ?? []).find((s) => s.user_id === p.id) ?? null,
-        role: (roles ?? []).find((r) => r.user_id === p.id)?.role ?? "user",
+        role: (roles ?? []).some((r) => r.user_id === p.id && r.role === "admin") ? "admin" : "user",
+        banned: (bans ?? []).some((b) => b.user_id === p.id),
       }));
     },
   });
@@ -134,6 +136,15 @@ function Admin() {
       .eq("user_id", userId);
     if (error) { toast.error(error.message); return; }
     toast.success("Subscription updated.");
+    void qc.invalidateQueries({ queryKey: ["admin-users"] });
+  }
+
+  async function toggleBan(userId: string, banned: boolean) {
+    const { error } = banned
+      ? await supabase.from("banned_users").delete().eq("user_id", userId)
+      : await supabase.from("banned_users").insert({ user_id: userId });
+    if (error) { toast.error(error.message); return; }
+    toast.success(banned ? "User unbanned." : "User banned.");
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
 
@@ -221,6 +232,7 @@ function Admin() {
                       <td className="p-4">
                         <p className="font-medium">{u.display_name ?? "—"}</p>
                         <p className="text-xs text-muted-foreground">{u.email}</p>
+                        {u.banned ? <Badge variant="destructive" className="mt-1 font-mono text-[10px]">Banned</Badge> : null}
                       </td>
                       <td className="p-4">
                         <Badge variant={u.role === "admin" ? "default" : "secondary"} className="font-mono text-[10px]">
@@ -245,6 +257,15 @@ function Admin() {
                           >
                             +100 credits
                           </Button>
+                          {u.role !== "admin" ? (
+                            <Button
+                              size="sm"
+                              variant={u.banned ? "outline" : "destructive"}
+                              onClick={() => void toggleBan(u.id, u.banned)}
+                            >
+                              {u.banned ? "Unban user" : "Ban user"}
+                            </Button>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

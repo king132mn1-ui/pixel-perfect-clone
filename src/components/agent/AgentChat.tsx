@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Crosshair, Loader2, Send, ShieldCheck, Square, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +29,7 @@ type Props = {
 };
 
 export function AgentChat({ agentType, title, subtitle, suggestions, placeholder, className }: Props) {
-  const { user, isAdmin, subscription, refresh } = useAuth();
+  const { user, isAdmin, banned, subscription, refresh, spendCredit } = useAuth();
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -62,9 +63,10 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
 
   const unlimited = isAdmin || !!subscription?.unlimited;
   const outOfCredits = !unlimited && (subscription?.credits_remaining ?? 0) <= 0;
+  const blocked = outOfCredits || banned;
 
   async function send(text: string) {
-    if (!user || busy) return;
+    if (!user || busy || banned) return;
     const trimmed = text.trim();
     if (!trimmed) return;
     if (outOfCredits) {
@@ -78,6 +80,8 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
     setInput("");
     setBusy(true);
     setActivity(null);
+    // Optimistic real-time decrement; server is the source of truth.
+    if (!unlimited) spendCredit();
 
     void supabase
       .from("chat_messages")
@@ -198,10 +202,15 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
       </div>
 
       <div className="mt-4">
-        {outOfCredits ? (
-          <p className="mb-2 text-xs text-destructive">
-            You have no AI credits left. Upgrade your plan on the Billing tab to continue.
-          </p>
+        {banned ? (
+          <div className="mb-3 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            Account suspended — access to the AI agents is restricted. Contact support.
+          </div>
+        ) : outOfCredits ? (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3">
+            <p className="text-sm text-destructive">You have 0 credits left. Upgrade your plan or buy more credits to keep chatting.</p>
+            <Button asChild size="sm"><Link to="/billing">Upgrade plan</Link></Button>
+          </div>
         ) : null}
         <div className="flex items-end gap-2">
           <Textarea
@@ -214,7 +223,8 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
                 void send(input);
               }
             }}
-            placeholder={placeholder}
+            placeholder={blocked ? "Messaging is disabled" : placeholder}
+            disabled={blocked}
             className="resize-none"
           />
           {busy ? (
@@ -222,7 +232,7 @@ export function AgentChat({ agentType, title, subtitle, suggestions, placeholder
               <Square className="h-4 w-4" />
             </Button>
           ) : (
-            <Button size="icon" aria-label="Send" disabled={!input.trim()} onClick={() => void send(input)}>
+            <Button size="icon" aria-label="Send" disabled={blocked || !input.trim()} onClick={() => void send(input)}>
               <Send className="h-4 w-4" />
             </Button>
           )}
