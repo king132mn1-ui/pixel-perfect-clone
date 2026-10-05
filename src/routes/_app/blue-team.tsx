@@ -197,7 +197,16 @@ function BlueTeam() {
         </Dialog>
       </div>
 
-      <div className="panel mt-6 p-6">
+      <AgentChat
+        className="mt-8"
+        agentType="blue_team"
+        title="Blue Team Agent"
+        subtitle="Autonomous defence — header checks, hardening changes and rule deployment via your execution node."
+        suggestions={BLUE_SUGGESTIONS}
+        placeholder="Describe the system to harden or the response task to execute…"
+      />
+
+      <div className="panel mt-10 p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="font-mono text-[11px] tracking-wider text-muted-foreground uppercase">Overall posture</p>
