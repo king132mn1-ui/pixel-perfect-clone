@@ -181,7 +181,16 @@ function RedTeam() {
         </Dialog>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[18rem_1fr]">
+      <AgentChat
+        className="mt-8"
+        agentType="red_team"
+        title="Red Team Agent"
+        subtitle="Autonomous recon and vulnerability analysis — tasks are dispatched to your external execution node."
+        suggestions={RED_SUGGESTIONS}
+        placeholder="Describe the authorised target or task to execute…"
+      />
+
+      <div className="mt-10 grid gap-6 lg:grid-cols-[18rem_1fr]">
         <aside className="panel h-fit p-3">
           <p className="px-2 py-1 font-mono text-[11px] tracking-wider text-muted-foreground uppercase">Engagements</p>
           {engagements.length === 0 ? (
