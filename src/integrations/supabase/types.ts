@@ -35,6 +35,24 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_users: {
+        Row: {
+          created_at: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           agent_type: string
