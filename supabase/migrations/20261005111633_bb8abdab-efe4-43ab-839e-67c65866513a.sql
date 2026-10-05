@@ -1,0 +1,2 @@
+ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS agent_type TEXT NOT NULL DEFAULT 'assistant';
+CREATE INDEX IF NOT EXISTS chat_messages_user_agent_idx ON public.chat_messages (user_id, agent_type, created_at);
