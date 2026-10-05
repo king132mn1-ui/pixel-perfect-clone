@@ -14,7 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SeverityBadge, SEVERITIES } from "@/components/SeverityBadge";
+import { AgentChat } from "@/components/agent/AgentChat";
 import { buildReportHtml } from "@/lib/report";
+
+const RED_SUGGESTIONS = [
+  "Scan https://example.com and map the attack surface",
+  "Fetch and review the security headers on api.example.com",
+  "Enumerate open TCP services on 10.0.0.5 in the authorised range",
+  "Analyse this finding and give me a CVSS score with remediation",
+];
 
 export const Route = createFileRoute("/_app/red-team")({
   head: () => ({
