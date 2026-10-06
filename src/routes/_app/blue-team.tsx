@@ -24,6 +24,9 @@ const BLUE_SUGGESTIONS = [
 ];
 
 export const Route = createFileRoute("/_app/blue-team")({
+  validateSearch: (s: Record<string, unknown>): { thread?: string } => ({
+    thread: typeof s["thread"] === "string" ? (s["thread"] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Blue Team Operations — SentinelSec AI" },

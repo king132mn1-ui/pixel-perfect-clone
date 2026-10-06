@@ -3,6 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AgentChat } from "@/components/agent/AgentChat";
 
 export const Route = createFileRoute("/_app/assistant")({
+  validateSearch: (s: Record<string, unknown>): { thread?: string } => ({
+    thread: typeof s["thread"] === "string" ? (s["thread"] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "AI Security Assistant — SentinelSec AI" },
