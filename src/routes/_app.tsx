@@ -79,7 +79,7 @@ function AppLayout() {
   }
 
   const unlimited = isAdmin || subscription?.unlimited;
-  const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email?.split("@")[0] ?? "Account";
+  const displayName = (user.user_metadata?.['display_name'] as string | undefined) ?? user.email?.split("@")[0] ?? "Account";
 
   return (
     <div className="min-h-screen">
