@@ -25,6 +25,9 @@ const RED_SUGGESTIONS = [
 ];
 
 export const Route = createFileRoute("/_app/red-team")({
+  validateSearch: (s: Record<string, unknown>): { thread?: string } => ({
+    thread: typeof s["thread"] === "string" ? (s["thread"] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Red Team Workspace — SentinelSec AI" },
