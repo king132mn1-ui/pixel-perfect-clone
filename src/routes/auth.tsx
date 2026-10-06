@@ -37,9 +37,15 @@ function AuthPage() {
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setBusy(false); toast.error(error.message); return; }
+    const { data: ban } = await supabase.from("banned_users").select("user_id").eq("user_id", signIn.user.id).maybeSingle();
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (ban) {
+      await supabase.auth.signOut();
+      toast.error("Account Suspended — access to this account has been restricted by an administrator.");
+      return;
+    }
     toast.success("Welcome back.");
     void navigate({ to: "/assistant" });
   }
