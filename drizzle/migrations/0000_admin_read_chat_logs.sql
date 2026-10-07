@@ -1,0 +1,2 @@
+CREATE POLICY "chat admin read" ON public.chat_messages FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "threads admin read" ON public.chat_threads FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
