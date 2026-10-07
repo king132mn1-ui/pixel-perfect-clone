@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { ChatLogs } from "@/components/admin/ChatLogs";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -211,6 +212,7 @@ function Admin() {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="payments">Payments {pending.length ? `(${pending.length})` : ""}</TabsTrigger>
             <TabsTrigger value="support">Support inbox</TabsTrigger>
+            <TabsTrigger value="chats">Chat logs</TabsTrigger>
             <TabsTrigger value="platform">Platform</TabsTrigger>
           </TabsList>
 
@@ -405,6 +407,10 @@ function Admin() {
                 Save message
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="chats" className="mt-6">
+            <ChatLogs users={users} onToggleBan={toggleBan} />
           </TabsContent>
         </Tabs>
       </main>
