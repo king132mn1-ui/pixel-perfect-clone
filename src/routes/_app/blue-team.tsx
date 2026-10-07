@@ -24,7 +24,7 @@ const BLUE_SUGGESTIONS = [
 ];
 
 export const Route = createFileRoute("/_app/blue-team")({
-  validateSearch: (s: Record<string, unknown>): { thread?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { thread?: string | undefined } => ({
     thread: typeof s["thread"] === "string" ? (s["thread"] as string) : undefined,
   }),
   head: () => ({

@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AgentChat } from "@/components/agent/AgentChat";
 
 export const Route = createFileRoute("/_app/assistant")({
-  validateSearch: (s: Record<string, unknown>): { thread?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { thread?: string | undefined } => ({
     thread: typeof s["thread"] === "string" ? (s["thread"] as string) : undefined,
   }),
   head: () => ({
