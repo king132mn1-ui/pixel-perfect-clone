@@ -161,7 +161,6 @@ export function ExecutionCard({ result }: { result: ExecutionResult }) {
         <CloudOff className="h-3.5 w-3.5 shrink-0" />
         <span className="font-mono uppercase tracking-wider">{payload.action}</span>
         <span className="text-muted-foreground">
-          {/[\u0600-\u06FF]/.test(payload.target) ? "" : ""}
           External node unavailable — the agent answered from analysis instead. / تعذّر الوصول إلى العقدة الخارجية.
         </span>
       </div>
