@@ -154,6 +154,20 @@ export function ExecutionCard({ result }: { result: ExecutionResult }) {
   const data = asRecord(result.response);
   const { payload } = result;
 
+  // Failed / unconfigured webhook: show a calm one-line notice, never raw payloads or HTTP errors.
+  if (result.simulated || !result.ok) {
+    return (
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-medium/40 bg-medium/10 px-3 py-2 text-[11px] text-medium">
+        <CloudOff className="h-3.5 w-3.5 shrink-0" />
+        <span className="font-mono uppercase tracking-wider">{payload.action}</span>
+        <span className="text-muted-foreground">
+          {/[\u0600-\u06FF]/.test(payload.target) ? "" : ""}
+          External node unavailable — the agent answered from analysis instead. / تعذّر الوصول إلى العقدة الخارجية.
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-3 rounded-md border border-primary/30 bg-primary/5 p-3">
       <button
