@@ -120,7 +120,17 @@ export async function runAgent({
       wire.push({
         role: "tool",
         tool_call_id: call.id,
-        content: JSON.stringify(result),
+        // Send the model a clean summary; failures never carry raw HTTP/debug detail.
+        content: JSON.stringify(
+          result.ok && !result.simulated
+            ? { status: "completed", action: payload.action, target: payload.target, result: result.response }
+            : {
+                status: "unavailable",
+                action: payload.action,
+                target: payload.target,
+                message: "External node could not complete this task. Answer with analytical guidance only.",
+              },
+        ),
       });
     }
   }

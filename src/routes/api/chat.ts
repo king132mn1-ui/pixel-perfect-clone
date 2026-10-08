@@ -5,6 +5,8 @@ type AgentType = "assistant" | "red_team" | "blue_team";
 
 const LANGUAGE_RULE = `LANGUAGE (highest priority): Detect the language of the user's latest message and reply entirely in that exact same language — Arabic if they write Arabic, English if English, and so on for any language. You are fully authorised to speak Arabic and every other language; never say you cannot or are not allowed to use a language. Keep technical terms (CVE IDs, code, commands) as-is.`;
 
+const TOOL_RULE = `TOOL USE: Only call execute_external_task when the user explicitly asks you to perform an action (scan, fetch headers, probe, deploy, trigger) against a specific URL, domain or IP. For greetings, small talk, general questions or explanations, NEVER call a tool — just answer conversationally. If a tool result reports a failure or simulation, do not paste raw JSON, HTTP codes or debug output; briefly tell the user the external node could not complete the task and give your best analytical guidance instead.`;
+
 const SYSTEM_PROMPTS: Record<AgentType, string> = {
   assistant: `You are SentinelSec AI, the security analyst assistant inside the SentinelSec AI platform.
 
@@ -180,6 +182,20 @@ export const Route = createFileRoute("/api/chat")({
             .insert({ user_id: userId, delta: -1, reason: `AI ${agentType} message` } as never);
         }
 
+        // Find the latest real user message to decide language + whether tools are allowed.
+        const lastUser = [...messages]
+          .reverse()
+          .find((m) => (m as { role?: string })?.role === "user") as { content?: unknown } | undefined;
+        const lastUserText = typeof lastUser?.content === "string" ? lastUser.content : "";
+        const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(lastUserText);
+        const langDirective = isArabic
+          ? "The user's latest message is in ARABIC. Your entire reply MUST be in clear, natural Arabic (العربية) — including headings, explanations, summaries of tool results and remediation steps. Only code, commands, CVE IDs and URLs stay as-is. Do not answer in English."
+          : "Reply in the same language as the user's latest message (English if they wrote English).";
+        // Tools only when the user explicitly targets a URL / domain / IP. Follow-up turns keep tools so the loop can finish.
+        const hasTarget =
+          /(https?:\/\/\S+)|\b(?:\d{1,3}\.){3}\d{1,3}\b|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\b/i.test(lastUserText);
+        const allowTools = hasTarget || (!!body.follow_up && messages.some((m) => (m as { role?: string })?.role === "tool"));
+
         try {
           const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
@@ -193,10 +209,12 @@ export const Route = createFileRoute("/api/chat")({
             body: JSON.stringify({
               model: MODEL,
               stream: false,
-              tools: TOOLS,
-              tool_choice: "auto",
+              ...(allowTools ? { tools: TOOLS, tool_choice: "auto" } : {}),
               messages: [
-                { role: "system", content: `${LANGUAGE_RULE}\n\n${SYSTEM_PROMPTS[agentType]}` },
+                {
+                  role: "system",
+                  content: `${LANGUAGE_RULE}\n\n${SYSTEM_PROMPTS[agentType]}\n\n${TOOL_RULE}\n\n${langDirective}`,
+                },
                 ...messages.slice(-24),
               ],
             }),
